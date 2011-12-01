@@ -50,12 +50,40 @@ mailServer.bind("foo@bar.com",handler);
 
 Done. Every mail sent to foo@bar.com (and every one sent before binding) will call the handler exactly once.
 
+You can have as many handlers as you want, they are all executed, even for the same address. However, execution order, while usually in the order in which they were added, is not guaranteed.
+
+# Catch-All Handlers
+If you want a handler to catch every email that is sent through the system, just bind with no address at all.
+
+````JavaScript
+handler = function(addr,id,email) {
+	// do something interesting
+	// because this is a catch-all, the addr will be null
+};
+mailServer.bind(handler);
+````
+
+Catch-All handlers are *always* run before specific handlers.
+
+
 Stopping Receipt
 ----------------
 To stop receiving mail at a particular handler, just unbind.
 
 ````JavaScript
 mailServer.unbind("foo@bar.com",handler);
+````
+
+# Catch-All Handlers
+If you want to remove a catch-all handler that catches every email that is sent through the system, just unbind with no address at all.
+
+````JavaScript
+handler = function(addr,id,email) {
+	// do something interesting
+	// because this is a catch-all, the addr will be null
+};
+mailServer.bind(handler); // this adds it
+mailServer.unbind(handler); // this removes it
 ````
 
 Removing Messages
@@ -79,7 +107,7 @@ Handlers
 --------
 Handlers that receive mail are passed three parameters.
 
-* addr: Address to which the email was addressed, and for which the handler was bound.
+* addr: Address to which the email was addressed, and for which the handler was bound. If this is a catch-all handler, then this is null.
 * id: Internal ID of the email in this mail server process. Useful for removing messages or checking against something in our cache.
 * email: JavaScript object of the email, containing "sender", "receivers", "data" (raw text), "headers" and "body".
 
