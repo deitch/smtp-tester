@@ -128,3 +128,26 @@ Sample email object is as follows, taken from the test.js included with the pack
      'Content-Transfer-Encoding': 'quoted-printable' },
   body: 'This is a test mail\r\n' }````
 
+Modules
+-------
+smtp-tester supports pre-shipped modules. They are named and can be run by calling
+
+````JavaScript
+var success;
+// to load a module
+success = mailServer.module(name);
+
+// to unload a module
+mailServer.unmodule(name);
+````
+
+If the module successfully loads, it will return success, else it will return false.
+
+The following modules are currently available.
+
+* logAll: logs every message received to the console in a text format close to raw text.
+
+More are expected to follow.
+
+
+

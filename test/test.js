@@ -1,4 +1,4 @@
-/*jslint node:true */
+/*jslint node:true, nomen:false */
 var ms = require('../lib/index'), nodeunit = require('nodeunit'), mailer = require('nodemailer'), mailPort = 4025, 
 mailServer, testFn, sendmail, from = "mailtest@bar.com";
 
@@ -21,77 +21,111 @@ sendmail = function(to,subject,body,cb) {
 
 
 testFn = {
-	testMail : {
-		sendMail: nodeunit.testCase({
-			setUp: function(callback) {
-				mailServer = ms.init(mailPort);
-				callback();
-			},
-			tearDown: function(callback) {
-				mailServer.stop();
-				callback();
-			},
-			// not logged in should give unauthenticated
-			specificHandler : function(test) {
-				var handler, checkDone, count = 0, expected = 2, addr = "foo@bar.com", subject = "email test", body = "This is a test email";
-				// bind a handler
-				handler = function(address,id,email) {
-					test.equal(address,addr,"Should have address sent to handler as '"+addr+"'");
-					test.equal(email.body,body+"\r\n","Body should match");
-					test.equal(email.headers.To,addr,"Should have header address To match");
-					test.equal(email.headers.From,from,"Should have header address From match");
+	sendMail: nodeunit.testCase({
+		setUp: function(callback) {
+			mailServer = ms.init(mailPort);
+			callback();
+		},
+		tearDown: function(callback) {
+			mailServer.stop();
+			callback();
+		},
+		// not logged in should give unauthenticated
+		specificHandler : function(test) {
+			var handler, checkDone, count = 0, expected = 2, addr = "foo@bar.com", subject = "email test", body = "This is a test email";
+			// bind a handler
+			handler = function(address,id,email) {
+				test.equal(address,addr,"Should have address sent to handler as '"+addr+"'");
+				test.equal(email.body,body+"\r\n","Body should match");
+				test.equal(email.headers.To,addr,"Should have header address To match");
+				test.equal(email.headers.From,from,"Should have header address From match");
+				checkDone();
+			};
+			checkDone = function() {
+				count++;
+				if (count >= expected) {
+					test.done();
+				}
+			};
+			mailServer.bind(addr,handler);
+		
+			// send out the email with the activation code
+			sendmail(addr,subject,body, function(error, success){
+				// indicate we are done
+				test.equal(true,success,"Should have success in sending mail");
+				if (success) {
 					checkDone();
-				};
-				checkDone = function() {
-					count++;
-					if (count >= expected) {
-						test.done();
-					}
-				};
-				mailServer.bind(addr,handler);
-			
-				// send out the email with the activation code
-				sendmail(addr,subject,body, function(error, success){
-					// indicate we are done
-					test.equal(true,success,"Should have success in sending mail");
-					if (success) {
-						checkDone();
-					} else {
-						test.done();
-					}
-				});
-			},
-			catchAllHandler : function(test) {
-				var handler, checkDone, count = 0, expected = 2, addr = "foo@bar.com", subject = "email test", body = "This is a test email";
-				// bind a handler
-				handler = function(address,id,email) {
-					test.equal(address,null,"Should have address 'null' sent to handler");
-					test.equal(email.body,body+"\r\n","Body should match");
-					test.equal(email.headers.To,addr,"Should have header address To match");
-					test.equal(email.headers.From,from,"Should have header address From match");
+				} else {
+					test.done();
+				}
+			});
+		},
+		catchAllHandler : function(test) {
+			var handler, checkDone, count = 0, expected = 2, addr = "foo@bar.com", subject = "email test", body = "This is a test email";
+			// bind a handler
+			handler = function(address,id,email) {
+				test.equal(address,null,"Should have address 'null' sent to handler");
+				test.equal(email.body,body+"\r\n","Body should match");
+				test.equal(email.headers.To,addr,"Should have header address To match");
+				test.equal(email.headers.From,from,"Should have header address From match");
+				checkDone();
+			};
+			checkDone = function() {
+				count++;
+				if (count >= expected) {
+					test.done();
+				}
+			};
+			mailServer.bind(handler);
+		
+			// send out the email with the activation code
+			sendmail(addr,subject,body, function(error, success){
+				// indicate we are done
+				test.equal(true,success,"Should have success in sending mail");
+				if (success) {
 					checkDone();
-				};
-				checkDone = function() {
-					count++;
-					if (count >= expected) {
-						test.done();
-					}
-				};
-				mailServer.bind(handler);
+				} else {
+					test.done();
+				}
+			});
+		}
+	}),
+	modules: nodeunit.testCase({
+		setUp: function(callback) {
+			mailServer = ms.init(mailPort);
+			callback();
+		},
+		tearDown: function(callback) {
+			mailServer.stop();
+			callback();
+		},
+		logAll : function(test) {
+			var success, addr = "foo@bar.com", subject = "email test", body = "This is a test email", _log = console.log, message;
 			
-				// send out the email with the activation code
-				sendmail(addr,subject,body, function(error, success){
-					// indicate we are done
-					test.equal(true,success,"Should have success in sending mail");
-					if (success) {
-						checkDone();
-					} else {
-						test.done();
-					}
-				});
-			}
-		})
-	}
+			message = "From: mailtest@bar.com\nTo: foo@bar.com\nSubject: email test\nThis is a test email\r\n\n\n";
+			
+			// load the module
+			success = mailServer.module("logAll");
+			test.equal(success,true,"Should have success loading module");
+			// send a mail, see that it ends up on the console
+			// but first capture the console
+			console.log = function(msg) {
+				// expect the message - but the date can change, so remove it
+				test.equal(msg.replace(/\nDate:.*\nSubject/,"\nSubject"),message,"Should be a specific message");
+				console.log = _log;
+				test.done();
+			};
+
+			// send out the email with the activation code
+			sendmail(addr,subject,body, function(error, success){
+				// indicate we are done
+				test.equal(true,success,"Should have success in sending mail");
+				if (!success) {
+					test.done();
+				}
+			});
+		}
+	})
 };
 
 nodeunit.reporters["default"].run(testFn,null);
