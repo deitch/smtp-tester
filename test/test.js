@@ -1,6 +1,6 @@
 /*jslint node:true, nomen:false */
 var ms = require('../lib/index'), nodeunit = require('nodeunit'), mailer = require('nodemailer'), mailPort = 4025, 
-mailServer, testFn, sendmail, from = "mailtest@bar.com";
+mailServer, testFn, sendmail, from = "smtpmailtest@gmail.com";
 
 //mailServer = ms.init(mailPort);
 
@@ -27,16 +27,15 @@ testFn = {
 			callback();
 		},
 		tearDown: function(callback) {
-			mailServer.stop();
-			callback();
+			mailServer.stop(callback);
 		},
 		// not logged in should give unauthenticated
 		specificHandler : function(test) {
-			var handler, checkDone, count = 0, expected = 2, addr = "foo@bar.com", subject = "email test", body = "This is a test email";
+			var handler, checkDone, count = 0, expected = 2, addr = "foo@gmail.com", subject = "email test", body = "This is a test email";
 			// bind a handler
 			handler = function(address,id,email) {
 				test.equal(address,addr,"Should have address sent to handler as '"+addr+"'");
-				test.equal(email.body,body+"\r\n","Body should match");
+				test.equal(email.body,body,"Body should match");
 				test.equal(email.headers.To,addr,"Should have header address To match");
 				test.equal(email.headers.From,from,"Should have header address From match");
 				checkDone();
@@ -61,11 +60,11 @@ testFn = {
 			});
 		},
 		catchAllHandler : function(test) {
-			var handler, checkDone, count = 0, expected = 2, addr = "foo@bar.com", subject = "email test", body = "This is a test email";
+			var handler, checkDone, count = 0, expected = 2, addr = "foo@gmail.com", subject = "email test", body = "This is a test email";
 			// bind a handler
 			handler = function(address,id,email) {
 				test.equal(address,null,"Should have address 'null' sent to handler");
-				test.equal(email.body,body+"\r\n","Body should match");
+				test.equal(email.body,body,"Body should match");
 				test.equal(email.headers.To,addr,"Should have header address To match");
 				test.equal(email.headers.From,from,"Should have header address From match");
 				checkDone();
@@ -96,13 +95,11 @@ testFn = {
 			callback();
 		},
 		tearDown: function(callback) {
-			mailServer.stop();
-			callback();
+			mailServer.stop(callback);
 		},
 		logAll : function(test) {
-			var success, addr = "foo@bar.com", subject = "email test", body = "This is a test email", _log = console.log, message;
-			
-			message = "From: mailtest@bar.com\nTo: foo@bar.com\nSubject: email test\nThis is a test email\r\n\n\n";
+			var success, addr = "foo@gmail.com", subject = "email test", body = "This is a test email", _log = console.log, message;
+			message = "From: smtpmailtest@gmail.com\nTo: foo@gmail.com\nSubject: email test\nThis is a test email\n\n";
 			
 			// load the module
 			success = mailServer.module("logAll");
@@ -110,8 +107,11 @@ testFn = {
 			// send a mail, see that it ends up on the console
 			// but first capture the console
 			console.log = function(msg) {
-				// expect the message - but the date can change, so remove it
-				test.equal(msg.replace(/\nDate:.*\nSubject/,"\nSubject"),message,"Should be a specific message");
+			  //_log(msg);
+			  if (msg && typeof(msg) === "string") {
+          // expect the message - but the date can change, so remove it
+          test.equal(msg.replace(/\nDate:.*\nSubject/,"\nSubject"),message,"Should be a specific message");
+			  }
 				console.log = _log;
 				test.done();
 			};
