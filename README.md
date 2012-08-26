@@ -126,7 +126,8 @@ Sample email object is as follows, taken from the test.js included with the pack
      'MIME-Version': '1.0',
      'Content-Type': 'text/plain; charset=UTF-8',
      'Content-Transfer-Encoding': 'quoted-printable' },
-  body: 'This is a test mail\r\n' }````
+  body: 'This is a test mail\r\n' }
+````
 
 Modules
 -------
