@@ -9,12 +9,17 @@ mailer.SMTP = {
 	port: mailPort,
 	hostname: "localhost.local"
 };
-sendmail = function(to,subject,body,cb) {
+sendmail = function(to,subject,body,headers,cb) {
+  if (!cb && typeof(headers) === "function") {
+    cb = headers;
+    headers = {};
+  }
 	mailer.send_mail({
 		sender: from, 
 		to:to,
 		subject:subject,
-		body:body
+		body:body,
+		headers:headers
 	},cb);
 };
 
@@ -79,6 +84,37 @@ testFn = {
 		
 			// send out the email with the activation code
 			sendmail(addr,subject,body, function(error, success){
+				// indicate we are done
+				test.equal(true,success,"Should have success in sending mail");
+				if (success) {
+					checkDone();
+				} else {
+					test.done();
+				}
+			});
+		},
+		foldedHeader: function(test) {
+			var handler, checkDone, count = 0, expected = 2, addr = "foo@gmail.com", subject = "email test", body = "This is a test email",
+			xfolded = "This is\r\n  a folded header";
+			// bind a handler
+			handler = function(address,id,email) {
+				test.equal(address,addr,"Should have address sent to handler as '"+addr+"'");
+				test.equal(email.body,body,"Body should match");
+				test.equal(email.headers.To,addr,"Should have header address To match");
+				test.equal(email.headers.From,from,"Should have header address From match");
+				test.equal(email.headers.Xfolded,xfolded.replace(/\r\n\s+/," "),"Should have the folded header");
+				checkDone();
+			};
+			checkDone = function() {
+				count++;
+				if (count >= expected) {
+					test.done();
+				}
+			};
+			mailServer.bind(addr,handler);
+		
+			// send out the email with the activation code
+			sendmail(addr,subject,body, {xfolded:xfolded},function(error, success){
 				// indicate we are done
 				test.equal(true,success,"Should have success in sending mail");
 				if (success) {
