@@ -102,7 +102,7 @@ testFn = {
 				test.equal(email.body,body,"Body should match");
 				test.equal(email.headers.To,addr,"Should have header address To match");
 				test.equal(email.headers.From,from,"Should have header address From match");
-				test.equal(email.headers.Xfolded,xfolded.replace(/\r\n\s+/," "),"Should have the folded header");
+				test.equal(email.headers.Xfolded,xfolded.replace(/\r\n\s/," "),"Should have the folded header");
 				checkDone();
 			};
 			checkDone = function() {
