@@ -1,7 +1,7 @@
 { 
 	"name": "smtp-tester", 
 	"description": "Quick and dirty smtp server, that accepts handlers to process messages",
-	"version": "0.4.5",
+	"version": "0.4.6",
 	"url": "http://github.com/deitch/smtp-tester",
 	"author": "Avi Deitcher <avi@deitcher.net>",
 	"contributors": [
