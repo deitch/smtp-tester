@@ -94,7 +94,7 @@ testFn = {
 				test.equal(email.body,body,"Body should match");
 				test.equal(email.headers.To,addr,"Should have header address To match");
 				test.equal(email.headers.From,from,"Should have header address From match");
-				test.equal(email.headers.Xfolded.replace(/(\r\n\s)/,""),xfolded.replace(/(\r\n\s)/,""),"Should have the folded header");
+				test.equal(email.headers.Xfolded.replace(/\r\n\s/,"").replace(/\s{3}/," "),xfolded.replace(/(\r\n\s)/,""),"Should have the folded header");
 				test.done();
 			};
 			mailServer.bind(addr,handler);
