@@ -65,29 +65,41 @@ testFn = {
 			});
 		},
 		catchAllHandler : function(test) {
-			var handler, addr = "foo@gmail.com", subject = "email test", body = "This is a test email";
+			var handler, checkDone, count = 0, expected = 2, addr = "foo@gmail.com", subject = "email test", body = "This is a test email";
+			checkDone = function () {
+				if (++count >= expected) {
+					test.done();
+				}
+			};
 			// bind a handler
 			handler = function(address,id,email) {
 				test.equal(address,null,"Should have address 'null' sent to handler");
 				test.equal(email.body,body,"Body should match");
 				test.equal(email.headers.To,addr,"Should have header address To match");
 				test.equal(email.headers.From,from,"Should have header address From match");
-				test.done();
+				checkDone();
 			};
 			mailServer.bind(handler);
 		
 			// send out the email with the activation code
-			sendmail(addr,subject,body, function(error, success){
+			sendmail(addr,subject,body, function(error, response){
 				// indicate we are done
-				test.equal(true,success,"Should have success in sending mail");
-				if (!success) {
+				test.equal(null,error,"Should have no error in sending mail");
+				if (!!error) {
 					test.done();
+				} else {
+					checkDone();
 				}
 			});
 		},
 		foldedHeader: function(test) {
-			var handler, addr = "foo@gmail.com", subject = "email test", body = "This is a test email",
+			var handler, checkDone, count = 0, expected = 2, addr = "foo@gmail.com", subject = "email test", body = "This is a test email",
 			xfolded = "This is\r\n  a folded header";
+			checkDone = function () {
+				if (++count >= expected) {
+					test.done();
+				}
+			};
 			// bind a handler
 			handler = function(address,id,email) {
 				test.equal(address,addr,"Should have address sent to handler as '"+addr+"'");
@@ -95,16 +107,18 @@ testFn = {
 				test.equal(email.headers.To,addr,"Should have header address To match");
 				test.equal(email.headers.From,from,"Should have header address From match");
 				test.equal(email.headers.Xfolded.replace(/\r\n\s/,"").replace(/\s{3}/," "),xfolded.replace(/(\r\n\s)/,""),"Should have the folded header");
-				test.done();
+				checkDone();
 			};
 			mailServer.bind(addr,handler);
 		
 			// send out the email with the activation code
-			sendmail(addr,subject,body, {xfolded:xfolded},function(error, success){
+			sendmail(addr,subject,body, {xfolded:xfolded},function(error, response){
 				// indicate we are done
-				test.equal(true,success,"Should have success in sending mail");
-				if (!success) {
+				test.equal(null,error,"Should have no error in sending mail");
+				if (!!error) {
 					test.done();
+				} else {
+					checkDone();
 				}
 			});
 		}
@@ -113,9 +127,15 @@ testFn = {
 		setUp: setUp,
 		tearDown: tearDown,
 		logAll : function(test) {
-			var success, addr = "foo@gmail.com", subject = "email test", body = "This is a test email", _log = console.log, message;
+			var success, checkDone, count = 0, expected = 2, addr = "foo@gmail.com", subject = "email test", body = "This is a test email", _log = console.log, message;
 			message = "From: smtpmailtest@gmail.com\nTo: foo@gmail.com\nSubject: email test\nThis is a test email\n\n";
 			
+			checkDone = function () {
+				if (++count >= expected) {
+					test.done();
+				}
+			};
+
 			// load the module
 			success = mailServer.module("logAll");
 			test.equal(success,true,"Should have success loading module");
@@ -128,15 +148,17 @@ testFn = {
           test.equal(msg.replace(/\nDate:.*\nSubject/,"\nSubject"),message,"Should be a specific message");
 			  }
 				console.log = _log;
-				test.done();
+				checkDone();
 			};
 
 			// send out the email with the activation code
-			sendmail(addr,subject,body, function(error, success){
+			sendmail(addr,subject,body, function(error, response){
 				// indicate we are done
-				test.equal(true,success,"Should have success in sending mail");
-				if (!success) {
+				test.equal(null,error,"Should have no error in sending mail");
+				if (!!error) {
 					test.done();
+				} else {
+					checkDone();
 				}
 			});
 		}
