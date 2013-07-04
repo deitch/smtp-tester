@@ -94,7 +94,7 @@ testFn = {
 		},
 		foldedHeader: function(test) {
 			var handler, checkDone, count = 0, expected = 2, addr = "foo@gmail.com", subject = "email test", body = "This is a test email",
-			xfolded = "This is\r\n  a folded header";
+			xfolded = "This is\r\n  a folded header", tabfolded = 'This is a \r\n\t tab folded header';
 			checkDone = function () {
 				if (++count >= expected) {
 					test.done();
@@ -107,12 +107,13 @@ testFn = {
 				test.equal(email.headers.To,addr,"Should have header address To match");
 				test.equal(email.headers.From,from,"Should have header address From match");
 				test.equal(email.headers.Xfolded.replace(/\r\n\s/,"").replace(/\s{3}/," "),xfolded.replace(/(\r\n\s)/,""),"Should have the folded header");
+				test.equal(email.headers.Tabfolded,tabfolded.replace(/(\r\n\s)/,""),"Should have the folded header starting with tab");
 				checkDone();
 			};
 			mailServer.bind(addr,handler);
 		
 			// send out the email with the activation code
-			sendmail(addr,subject,body, {xfolded:xfolded},function(error, response){
+			sendmail(addr,subject,body, {xfolded:xfolded, tabfolded: tabfolded},function(error, response){
 				// indicate we are done
 				test.equal(null,error,"Should have no error in sending mail");
 				if (!!error) {
