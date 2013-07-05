@@ -93,8 +93,9 @@ testFn = {
 			});
 		},
 		foldedHeader: function(test) {
+			// this is an issue, we need to test it by forcing actual specific headers down to detail
 			var handler, checkDone, count = 0, expected = 2, addr = "foo@gmail.com", subject = "email test", body = "This is a test email",
-			xfolded = "This is\r\n  a folded header";
+			xfolded = "This is a\r\n  folded header", xfoldedtab = "This is a\r\n\t tab folder header";
 			checkDone = function () {
 				if (++count >= expected) {
 					test.done();
@@ -106,13 +107,14 @@ testFn = {
 				test.equal(email.body,body,"Body should match");
 				test.equal(email.headers.To,addr,"Should have header address To match");
 				test.equal(email.headers.From,from,"Should have header address From match");
-				test.equal(email.headers.Xfolded.replace(/\r\n\s/,"").replace(/\s{3}/," "),xfolded.replace(/(\r\n\s)/,""),"Should have the folded header");
+				test.equal(email.headers.Xfolded,xfolded.replace(/\r\n\s/,""),"Should have the folded header unfolded");
+				test.equal(email.headers.Xfoldedtab,xfoldedtab.replace(/\r\n\s/,""),"Should have the tab folded header unfolded");
 				checkDone();
 			};
 			mailServer.bind(addr,handler);
 		
 			// send out the email with the activation code
-			sendmail(addr,subject,body, {xfolded:xfolded},function(error, response){
+			sendmail(addr,subject,body, {xfolded:xfolded,xfoldedtab:xfoldedtab},function(error, response){
 				// indicate we are done
 				test.equal(null,error,"Should have no error in sending mail");
 				if (!!error) {
