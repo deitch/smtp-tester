@@ -1,7 +1,7 @@
 { 
 	"name": "smtp-tester", 
 	"description": "Quick and dirty smtp server, that accepts handlers to process messages",
-	"version": "0.4.7",
+	"version": "0.4.8",
 	"url": "http://github.com/deitch/smtp-tester",
 	"author": "Avi Deitcher <avi@deitcher.net>",
 	"contributors": [
@@ -13,10 +13,11 @@
 	  "underscore":">=1.4.4",
 	  "mimelib-noiconv":">=0.1.9",
 	  "nodemailer":">=0.4.4",
+		"emailjs":">=0.3.4",
 	  "simplesmtp":">=0.3.3"
 	},
 	"devDependencies": {"nodeunit":">=0.8.1"},
-	"test":"./test/test.js",
+	"test":"./test/test2.js",
 	"repository": {
 		"type" : "git",
 		"url" : "http://github.com/deitch/smtp-tester.git"
