@@ -14,22 +14,22 @@ function sendmail(to, subject, body, headers, cb) {
     cb = headers;
     headers = {};
   }
-	smtpTransport.sendMail({
-		sender:  'smtpmailtest@gmail.com',
-		to:      to,
-		subject: subject,
-		body:    body,
-		headers: headers
-	}, cb);
+  smtpTransport.sendMail({
+    sender:  'smtpmailtest@gmail.com',
+    to:      to,
+    subject: subject,
+    body:    body,
+    headers: headers
+  }, cb);
 }
 
 test('setup', function(t) {
-	smtpTransport = mailer.createTransport('SMTP',{
-		host: 'localhost',
-		port: PORT,
-		name: os.hostname()
-	});
-	mailServer = ms.init(PORT);
+  smtpTransport = mailer.createTransport('SMTP',{
+    host: 'localhost',
+    port: PORT,
+    name: os.hostname()
+  });
+  mailServer = ms.init(PORT);
   t.end();
 });
 
@@ -129,7 +129,7 @@ test('modules', function(t) {
 
 
 test('teardown', function(t) {
-	mailServer.stop();
+  mailServer.stop();
   smtpTransport.close();
   t.end();
 });
