@@ -1,25 +1,31 @@
-{ 
-	"name": "smtp-tester", 
-	"description": "Quick and dirty smtp server, that accepts handlers to process messages",
-	"version": "0.5.1",
-	"url": "http://github.com/deitch/smtp-tester",
-	"author": "Avi Deitcher <avi@deitcher.net>",
-	"contributors": [
-		"Greg Miell (https://github.com/GothAck)"
-	],
-	"engines": ["node >= 0.4"],
-	"main": "./lib/index.js", 
-	"dependencies": {
-	  "underscore":">=1.4.4",
-	  "mimelib-noiconv":">=0.1.9",
-	  "nodemailer":">=0.5.0",
-	  "simplesmtp":">=0.3.33",
-		"mailparser":">=0.4.3"
-	},
-	"devDependencies": {"nodeunit":">=0.8.1"},
-	"test":"./test/test2.js",
-	"repository": {
-		"type" : "git",
-		"url" : "http://github.com/deitch/smtp-tester.git"
-	}
+{
+  "name": "smtp-tester",
+  "description": "Quick and dirty smtp server, that accepts handlers to process messages",
+  "version": "0.5.1",
+  "url": "http://github.com/deitch/smtp-tester",
+  "scripts": {
+    "test": "node test/test.js"
+  },
+  "author": "Avi Deitcher <avi@deitcher.net>",
+  "contributors": [
+    "Greg Miell (https://github.com/GothAck)"
+  ],
+  "engines": {
+    "node": ">=0.12"
+  },
+  "main": "./lib/index.js",
+  "dependencies": {
+    "mailparser": ">=0.4.3",
+    "mimelib-noiconv": ">=0.1.9",
+    "nodemailer": "^0.7.1",
+    "simplesmtp": ">=0.3.33",
+    "underscore": ">=1.4.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/deitch/smtp-tester.git"
+  },
+  "devDependencies": {
+    "tape": "^4.5.1"
+  }
 }
