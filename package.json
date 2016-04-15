@@ -15,11 +15,11 @@
   },
   "main": "./lib/index.js",
   "dependencies": {
-    "mailparser": ">=0.4.3",
-    "mimelib-noiconv": ">=0.1.9",
+    "mailparser": "^0.5.3",
+    "mimelib-noiconv": "^0.1.9",
     "nodemailer": "^0.7.1",
-    "simplesmtp": ">=0.3.33",
-    "underscore": ">=1.4.4"
+    "simplesmtp": "^0.3.35",
+    "underscore": "^1.8.3"
   },
   "repository": {
     "type": "git",
