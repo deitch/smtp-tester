@@ -96,6 +96,34 @@ test('folded headers', function(t) {
 });
 
 
+test('remove by ID', function(t) {
+  var handler1 = function(address, id, email) {
+    mailServer.remove(id);
+    mailServer.unbind(handler1);
+
+    var timeout = setTimeout(function() {
+      mailServer.unbind(handler2);
+      t.end();
+    }, 500);
+
+    var handler2 = function(address, id, email) {
+      clearTimeout(timeout);
+      t.fail('Did not expect to get any other message.');
+      mailServer.unbind(handler2);
+      t.end();
+    };
+
+    mailServer.bind(handler2);
+  };
+
+  mailServer.bind(handler1);
+
+  sendmail('foo@gmail.com', 'email test', 'This is a test email', function(err, response) {
+    t.error(err);
+  });
+});
+
+
 test('modules', function(t) {
   var success = mailServer.module('logAll');
   t.equal(success, true);
