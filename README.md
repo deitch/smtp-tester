@@ -1,5 +1,7 @@
-smtp-tester
+smtp-tester 
 ===========
+
+![](https://travis-ci.org/deitch/smtp-tester.svg?branch=master)
 
 Overview
 --------
