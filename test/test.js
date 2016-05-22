@@ -1,7 +1,9 @@
+/*jslint unused:vars, node:true */
 var mailer   = require('nodemailer');
 var ms       = require('../lib/index');
 var test     = require('tape');
 var os       = require('os');
+var async    = require('async');
 
 
 var PORT = 4025;
@@ -56,7 +58,7 @@ test('specific handler', function(t) {
 
 
 test('catch-all handler', function(t) {
-  var recp = 'bar@gmail.com', subject = 'email test', body = 'This is a test email',
+  var recp = 'bar@gmail.com', subject = 'some other test', body = 'This is another test email',
   handler = function(address, id, email) {
     t.equal(address,            null);
     t.equal(email.headers.To,   recp);
@@ -76,7 +78,7 @@ test('catch-all handler', function(t) {
 
 
 test('folded headers', function(t) {
-  var recp = 'bar@gmail.com', subject = 'email test', body = 'This is a test email',
+  var recp = 'bar@gmail.com', subject = 'email test why not', body = 'Why not a test email?',
   xfolded = 'This is a\r\n folded header', xfoldedtab = 'This is a\r\n\t tab folded header',
   handler = function(address, id, email) {
     t.equal(email.headers.To,         recp);
@@ -102,7 +104,7 @@ test('folded headers', function(t) {
 
 
 test('remove by ID', function(t) {
-  var recp = 'foo@gmail.com', subject = 'email test', body = 'This is a test email',
+  var recp = 'foo@gmail.com', subject = 'email strange test', body = 'Charmed test email',
   handler1 = function(address, id, email) {
     mailServer.remove(id);
     mailServer.unbind(handler1);
@@ -131,7 +133,7 @@ test('remove by ID', function(t) {
 
 
 test('modules', function(t) {
-  var recp = 'foo@gmail.com', subject = 'email test', body = 'This is a test email',
+  var recp = 'foo@gmail.com', subject = 'email test modules', body = 'This is a module test email',
   success = mailServer.module('logAll');
   t.equal(success, true);
 

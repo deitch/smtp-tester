@@ -9,7 +9,7 @@
   "author": "Avi Deitcher <avi@deitcher.net>",
   "contributors": [
     "Greg Miell (https://github.com/GothAck)",
-		"Damian Janowski (https://github.com/djanowski)"
+    "Damian Janowski (https://github.com/djanowski)"
   ],
   "engines": {
     "node": ">=0.12"
@@ -27,6 +27,7 @@
     "url": "http://github.com/deitch/smtp-tester.git"
   },
   "devDependencies": {
+    "async": "^2.0.0-rc.5",
     "tape": "^4.5.1"
   }
 }
