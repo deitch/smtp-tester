@@ -62,7 +62,7 @@ test('handler with two emails', function(t) {
 		mails.push({address:address, id: id, email: email});
   };
 
-  mailServer.bind('foo@gmail.com', handler);
+  mailServer.bind(recp, handler);
 
 	// send the email twice, each time with a different subject, body
 	async.waterfall([
@@ -87,6 +87,56 @@ test('handler with two emails', function(t) {
 			}
 	    mailServer.unbind(recp,handler);
 	    mailServer.removeAll();
+			t.end();
+		}
+	});
+});
+
+test('two emails with different handlers', function(t) {
+  var recp = 'foo@gmail.com', subject = 'email test', body = 'This is a test email',
+  handler0 = function (cb) {
+  	return function(address, id, email) {
+	    t.equal(address,            recp);
+	    t.equal(email.headers.To,   recp);
+	    t.equal(email.headers.From, sender);
+	    t.equal(email.subject,      subject+"0");
+	    t.equal(email.body,         body+"0");
+			mailServer.unbind(recp,handler0);
+			mailServer.removeAll();
+			cb(null);
+	  };
+  },
+  handler1 = function (cb) {
+		return function(address, id, email) {
+	    t.equal(address,            recp);
+	    t.equal(email.headers.To,   recp);
+	    t.equal(email.headers.From, sender);
+	    t.equal(email.subject,      subject+"1");
+	    t.equal(email.body,         body+"1");
+			mailServer.unbind(recp,handler1);
+			mailServer.removeAll();
+			cb(null);
+	  };
+  };
+
+	// send the email twice, each time with a different subject, body
+	async.waterfall([
+		function (cb) {
+			sendmail(recp, subject+"0", body+"0", cb);
+		},
+		function (res,cb) {
+			mailServer.bind(recp,handler0(cb));
+		},
+		function (cb) {
+			sendmail(recp, subject+"1", body+"1", cb);
+		},
+		function (res,cb) {
+			mailServer.bind(recp,handler1(cb));
+		}
+	],function (err) {
+		if (err) {
+			t.error(err);
+		} else {
 			t.end();
 		}
 	});
