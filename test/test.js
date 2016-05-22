@@ -7,6 +7,7 @@ var os       = require('os');
 var PORT = 4025;
 var mailServer;
 var smtpTransport;
+var sender = 'smtpmailtest@gmail.com';
 
 
 function sendmail(to, subject, body, headers, cb) {
@@ -15,7 +16,7 @@ function sendmail(to, subject, body, headers, cb) {
     headers = {};
   }
   smtpTransport.sendMail({
-    sender:  'smtpmailtest@gmail.com',
+    sender:  sender,
     to:      to,
     subject: subject,
     body:    body,
@@ -35,11 +36,12 @@ test('setup', function(t) {
 
 
 test('specific handler', function(t) {
-  var handler = function(address, id, email) {
-    t.equal(address,            'foo@gmail.com');
-    t.equal(email.headers.To,   'foo@gmail.com');
-    t.equal(email.headers.From, 'smtpmailtest@gmail.com');
-    t.equal(email.body,         'This is a test email');
+  var recp = 'foo@gmail.com', subject = 'email test', body = 'This is a test email',
+  handler = function(address, id, email) {
+    t.equal(address,            recp);
+    t.equal(email.headers.To,   recp);
+    t.equal(email.headers.From, sender);
+    t.equal(email.body,         body);
     mailServer.unbind(handler);
     mailServer.removeAll();
     t.end();
@@ -47,18 +49,19 @@ test('specific handler', function(t) {
 
   mailServer.bind('foo@gmail.com', handler);
 
-  sendmail('foo@gmail.com', 'email test', 'This is a test email', function(err, response) {
+  sendmail(recp, subject, body, function(err, response) {
     t.error(err);
   });
 });
 
 
 test('catch-all handler', function(t) {
-  var handler = function(address, id, email) {
+  var recp = 'bar@gmail.com', subject = 'email test', body = 'This is a test email',
+  handler = function(address, id, email) {
     t.equal(address,            null);
-    t.equal(email.headers.To,   'bar@gmail.com');
-    t.equal(email.headers.From, 'smtpmailtest@gmail.com');
-    t.equal(email.body,         'This is a test email');
+    t.equal(email.headers.To,   recp);
+    t.equal(email.headers.From,  sender);
+    t.equal(email.body,         body);
     mailServer.unbind(handler);
     mailServer.removeAll();
     t.end();
@@ -66,18 +69,20 @@ test('catch-all handler', function(t) {
 
   mailServer.bind(handler);
 
-  sendmail('bar@gmail.com', 'email test', 'This is a test email', function(err, response) {
+  sendmail(recp, subject, body, function(err, response) {
     t.error(err);
   });
 });
 
 
 test('folded headers', function(t) {
-  var handler = function(address, id, email) {
-    t.equal(email.headers.To,         'bar@gmail.com');
-    t.equal(email.headers.From,       'smtpmailtest@gmail.com');
-    t.equal(email.headers.Xfolded,    'This is a folded header');
-    t.equal(email.headers.Xfoldedtab, 'This is a tab folded header');
+  var recp = 'bar@gmail.com', subject = 'email test', body = 'This is a test email',
+  xfolded = 'This is a\r\n folded header', xfoldedtab = 'This is a\r\n\t tab folded header',
+  handler = function(address, id, email) {
+    t.equal(email.headers.To,         recp);
+    t.equal(email.headers.From,       sender);
+    t.equal(email.headers.Xfolded,    xfolded.replace(/[\r\n\t]/g,''));
+    t.equal(email.headers.Xfoldedtab, xfoldedtab.replace(/[\r\n\t]/g,''));
     mailServer.unbind(handler);
     mailServer.removeAll();
     t.end();
@@ -86,18 +91,19 @@ test('folded headers', function(t) {
   mailServer.bind(handler);
 
   var headers = {
-    xfolded:    'This is a\r\n folded header',
-    xfoldedtab: 'This is a\r\n\t tab folded header'
+    xfolded:    xfolded,
+    xfoldedtab: xfoldedtab
   };
 
-  sendmail('bar@gmail.com', 'email test', 'This is a test email', headers, function(err, response) {
+  sendmail(recp, subject, body, headers, function(err, response) {
     t.error(err);
   });
 });
 
 
 test('remove by ID', function(t) {
-  var handler1 = function(address, id, email) {
+  var recp = 'foo@gmail.com', subject = 'email test', body = 'This is a test email',
+  handler1 = function(address, id, email) {
     mailServer.remove(id);
     mailServer.unbind(handler1);
 
@@ -118,14 +124,15 @@ test('remove by ID', function(t) {
 
   mailServer.bind(handler1);
 
-  sendmail('foo@gmail.com', 'email test', 'This is a test email', function(err, response) {
+  sendmail(recp, subject, body, function(err, response) {
     t.error(err);
   });
 });
 
 
 test('modules', function(t) {
-  var success = mailServer.module('logAll');
+  var recp = 'foo@gmail.com', subject = 'email test', body = 'This is a test email',
+  success = mailServer.module('logAll');
   t.equal(success, true);
 
   var _log    = console.log;
@@ -139,10 +146,10 @@ test('modules', function(t) {
       });
 
     t.same(lines, [
-      'From: smtpmailtest@gmail.com',
-      'To: foo@gmail.com',
-      'Subject: email test',
-      'This is a test email',
+      'From: '+sender,
+      'To: '+recp,
+      'Subject: '+subject,
+      body,
       '',
       ''
     ]);
@@ -150,7 +157,7 @@ test('modules', function(t) {
     t.end();
   };
 
-  sendmail('foo@gmail.com', 'email test', 'This is a test email', function(err, response) {
+  sendmail(recp, subject, body, function(err, response) {
     t.error(err);
   });
 });
