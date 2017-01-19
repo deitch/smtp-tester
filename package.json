@@ -1,7 +1,7 @@
 {
   "name": "smtp-tester",
   "description": "Quick and dirty smtp server, that accepts handlers to process messages",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "url": "http://github.com/deitch/smtp-tester",
   "scripts": {
     "test": "node test/test.js"
@@ -9,7 +9,8 @@
   "author": "Avi Deitcher <avi@deitcher.net>",
   "contributors": [
     "Greg Miell (https://github.com/GothAck)",
-    "Damian Janowski (https://github.com/djanowski)"
+    "Damian Janowski (https://github.com/djanowski)",
+    "fallafeljan (https://github.com/fallafeljan)"
   ],
   "engines": {
     "node": ">=0.12"
