@@ -93,9 +93,9 @@ test('handler with two emails', function(t) {
 });
 
 test('two emails with different handlers', function(t) {
-  var recp = 'foo@gmail.com', subject = 'email test', body = 'This is a test email',
-  handler0 = function (cb) {
-  	return function(address, id, email) {
+  var recp = 'foo@gmail.com', subject = 'email test', body = 'This is a test email';
+  var handler0Factory = function (cb) {
+  	handler0 = function(address, id, email) {
 	    t.equal(address,            recp);
 	    t.equal(email.headers.To,   recp);
 	    t.equal(email.headers.From, sender);
@@ -105,9 +105,11 @@ test('two emails with different handlers', function(t) {
 			mailServer.removeAll();
 			cb(null);
 	  };
-  },
-  handler1 = function (cb) {
-		return function(address, id, email) {
+
+    return handler0;
+  };
+  var handler1Factory = function (cb) {
+		handler1 = function(address, id, email) {
 	    t.equal(address,            recp);
 	    t.equal(email.headers.To,   recp);
 	    t.equal(email.headers.From, sender);
@@ -117,6 +119,8 @@ test('two emails with different handlers', function(t) {
 			mailServer.removeAll();
 			cb(null);
 	  };
+
+    return handler1;
   };
 
 	// send the email twice, each time with a different subject, body
@@ -125,13 +129,13 @@ test('two emails with different handlers', function(t) {
 			sendmail(recp, subject+"0", body+"0", cb);
 		},
 		function (res,cb) {
-			mailServer.bind(recp,handler0(cb));
+			mailServer.bind(recp,handler0Factory(cb));
 		},
 		function (cb) {
 			sendmail(recp, subject+"1", body+"1", cb);
 		},
 		function (res,cb) {
-			mailServer.bind(recp,handler1(cb));
+			mailServer.bind(recp,handler1Factory(cb));
 		}
 	],function (err) {
 		if (err) {
@@ -215,6 +219,36 @@ test('remove by ID', function(t) {
 
   sendmail(recp, subject, body, function(err, response) {
     t.error(err);
+  });
+});
+
+test('unbind', function(t) {
+  var recp = 'foo@gmail.com',
+    subject = 'email strange test',
+    body = 'Charmed test email';
+
+  var handler1Called = false,
+    handler2Called = false;
+
+  var handler1 = function() {
+    handler1Called = true;
+  };
+
+  var handler2 = function() {
+    t.fail('`handler2` was unbound and should not be called.');
+  };
+
+  mailServer.bind(handler1);
+  mailServer.bind(handler2);
+
+  mailServer.unbind(handler2);
+
+  sendmail(recp, subject, body, function(err, response) {
+    t.ok(handler1Called);
+    t.error(err);
+
+    mailServer.unbind(handler1);
+    t.end();
   });
 });
 
