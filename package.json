@@ -17,9 +17,8 @@
   },
   "main": "./lib/index.js",
   "dependencies": {
-    "mailparser": "^0.5.3",
+    "mailparser": "^2.0.4",
     "mimelib-noiconv": "^0.1.9",
-    "nodemailer": "^0.7.1",
     "simplesmtp": "^0.3.35",
     "underscore": "^1.8.3"
   },
@@ -29,6 +28,7 @@
   },
   "devDependencies": {
     "async": "^2.0.0-rc.5",
+    "nodemailer": "^4.0.1",
     "tape": "^4.5.1"
   }
 }

@@ -18,19 +18,23 @@ function sendmail(to, subject, body, headers, cb) {
     headers = {};
   }
   smtpTransport.sendMail({
-    sender:  sender,
+    from:    sender,
     to:      to,
     subject: subject,
-    body:    body,
+    text:    body,
     headers: headers
   }, cb);
 }
 
 test('setup', function(t) {
-  smtpTransport = mailer.createTransport('SMTP',{
+  smtpTransport = mailer.createTransport({
     host: 'localhost',
     port: PORT,
-    name: os.hostname()
+    secure: false,
+    name: os.hostname(),
+    tls: {
+      rejectUnauthorized: false
+    }
   });
   mailServer = ms.init(PORT);
   t.end();
@@ -172,10 +176,10 @@ test('folded headers', function(t) {
   var recp = 'bar@gmail.com', subject = 'email test why not', body = 'Why not a test email?',
   xfolded = 'This is a\r\n folded header', xfoldedtab = 'This is a\r\n\t tab folded header',
   handler = function(address, id, email) {
-    t.equal(email.headers.To,         recp);
-    t.equal(email.headers.From,       sender);
-    t.equal(email.headers.Xfolded,    xfolded.replace(/[\r\n\t]/g,''));
-    t.equal(email.headers.Xfoldedtab, xfoldedtab.replace(/[\r\n\t]/g,''));
+    t.equal(email.headers.To,                recp);
+    t.equal(email.headers.From,              sender);
+    t.equal(email.headers.get('xfolded'),    'This is a  folded header');
+    t.equal(email.headers.get('xfoldedtab'), 'This is a \t tab folded header');
     mailServer.unbind(handler);
     mailServer.removeAll();
     t.end();
@@ -221,6 +225,31 @@ test('remove by ID', function(t) {
     t.error(err);
   });
 });
+
+
+test('unescape double dots', function(t) {
+  var to = 'foo@gmail.com',
+      subject = 'email test',
+      body = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam sagittis... Purus vitae aliquet euismod.',
+  handler = function(address, id, email) {
+    t.equal(email.text,         body);
+    mailServer.unbind(to,handler);
+    mailServer.removeAll();
+    t.end();
+  };
+
+  mailServer.bind(to, handler);
+
+  smtpTransport.sendMail({
+    from:    sender,
+    to:      to,
+    subject: subject,
+    text:    body
+  }, function(err, response) {
+    t.error(err);
+  });
+});
+
 
 test('unbind', function(t) {
   var recp = 'foo@gmail.com',
