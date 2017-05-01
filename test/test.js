@@ -173,13 +173,12 @@ test('catch-all handler', function(t) {
 
 
 test('folded headers', function(t) {
-  var recp = 'bar@gmail.com', subject = 'email test why not', body = 'Why not a test email?',
-  xfolded = 'This is a\r\n folded header', xfoldedtab = 'This is a\r\n\t tab folded header',
+  var longHeaderValue = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam sagittis purus vitae aliquet euismod.';
+  var recp = 'bar@gmail.com', subject = 'email test why not', body = 'Why not a test email?';
   handler = function(address, id, email) {
-    t.equal(email.headers.To,                recp);
-    t.equal(email.headers.From,              sender);
-    t.equal(email.headers.get('xfolded'),    'This is a  folded header');
-    t.equal(email.headers.get('xfoldedtab'), 'This is a \t tab folded header');
+    t.equal(email.headers.To,              recp);
+    t.equal(email.headers.From,            sender);
+    t.equal(email.headers.get('x-folded'), longHeaderValue);
     mailServer.unbind(handler);
     mailServer.removeAll();
     t.end();
@@ -188,8 +187,7 @@ test('folded headers', function(t) {
   mailServer.bind(handler);
 
   var headers = {
-    xfolded:    xfolded,
-    xfoldedtab: xfoldedtab
+    'x-folded': longHeaderValue
   };
 
   sendmail(recp, subject, body, headers, function(err, response) {
