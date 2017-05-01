@@ -19,7 +19,7 @@
   "dependencies": {
     "mailparser": "^2.0.4",
     "mimelib-noiconv": "^0.1.9",
-    "simplesmtp": "^0.3.35",
+    "smtp-server": "^3.0.1",
     "underscore": "^1.8.3"
   },
   "repository": {

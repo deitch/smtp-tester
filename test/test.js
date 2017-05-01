@@ -45,8 +45,8 @@ test('specific handler', function(t) {
   var recp = 'foo@gmail.com', subject = 'email test', body = 'This is a test email',
   handler = function(address, id, email) {
     t.equal(address,            recp);
-    t.equal(email.headers.To,   recp);
-    t.equal(email.headers.From, sender);
+    t.equal(email.headers.to,   recp);
+    t.equal(email.headers.from, sender);
     t.equal(email.body,         body);
     mailServer.unbind(recp,handler);
     mailServer.removeAll();
@@ -83,11 +83,11 @@ test('handler with two emails', function(t) {
 			// process the emails
 			t.equal(mails.length, 2);
 			for (var i=0; i<mails.length; i++) {
-		    t.equal(mails[i].address,            recp);
-		    t.equal(mails[i].email.headers.To,   recp);
-		    t.equal(mails[i].email.headers.From, sender);
-		    t.equal(mails[i].email.subject,      subject+i);
-		    t.equal(mails[i].email.body,         body+i);
+		    t.equal(mails[i].address,               recp);
+		    t.equal(mails[i].email.headers.to,      recp);
+		    t.equal(mails[i].email.headers.from,    sender);
+		    t.equal(mails[i].email.headers.subject, subject+i);
+		    t.equal(mails[i].email.body,            body+i);
 			}
 	    mailServer.unbind(recp,handler);
 	    mailServer.removeAll();
@@ -100,11 +100,11 @@ test('two emails with different handlers', function(t) {
   var recp = 'foo@gmail.com', subject = 'email test', body = 'This is a test email';
   var handler0Factory = function (cb) {
   	handler0 = function(address, id, email) {
-	    t.equal(address,            recp);
-	    t.equal(email.headers.To,   recp);
-	    t.equal(email.headers.From, sender);
-	    t.equal(email.subject,      subject+"0");
-	    t.equal(email.body,         body+"0");
+	    t.equal(address,               recp);
+	    t.equal(email.headers.to,      recp);
+	    t.equal(email.headers.from,    sender);
+	    t.equal(email.headers.subject, subject+"0");
+	    t.equal(email.body,            body+"0");
 			mailServer.unbind(recp,handler0);
 			mailServer.removeAll();
 			cb(null);
@@ -114,11 +114,11 @@ test('two emails with different handlers', function(t) {
   };
   var handler1Factory = function (cb) {
 		handler1 = function(address, id, email) {
-	    t.equal(address,            recp);
-	    t.equal(email.headers.To,   recp);
-	    t.equal(email.headers.From, sender);
-	    t.equal(email.subject,      subject+"1");
-	    t.equal(email.body,         body+"1");
+	    t.equal(address,               recp);
+	    t.equal(email.headers.to,      recp);
+	    t.equal(email.headers.from,    sender);
+	    t.equal(email.headers.subject, subject+"1");
+	    t.equal(email.body,            body+"1");
 			mailServer.unbind(recp,handler1);
 			mailServer.removeAll();
 			cb(null);
@@ -156,8 +156,8 @@ test('catch-all handler', function(t) {
   var recp = 'bar@gmail.com', subject = 'some other test', body = 'This is another test email',
   handler = function(address, id, email) {
     t.equal(address,            null);
-    t.equal(email.headers.To,   recp);
-    t.equal(email.headers.From,  sender);
+    t.equal(email.headers.to,   recp);
+    t.equal(email.headers.from, sender);
     t.equal(email.body,         body);
     mailServer.unbind(handler);
     mailServer.removeAll();
@@ -176,9 +176,9 @@ test('folded headers', function(t) {
   var longHeaderValue = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam sagittis purus vitae aliquet euismod.';
   var recp = 'bar@gmail.com', subject = 'email test why not', body = 'Why not a test email?';
   handler = function(address, id, email) {
-    t.equal(email.headers.To,              recp);
-    t.equal(email.headers.From,            sender);
-    t.equal(email.headers.get('x-folded'), longHeaderValue);
+    t.equal(email.headers.to,          recp);
+    t.equal(email.headers.from,        sender);
+    t.equal(email.headers['x-folded'], longHeaderValue);
     mailServer.unbind(handler);
     mailServer.removeAll();
     t.end();
@@ -230,7 +230,7 @@ test('unescape double dots', function(t) {
       subject = 'email test',
       body = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam sagittis... Purus vitae aliquet euismod.',
   handler = function(address, id, email) {
-    t.equal(email.text,         body);
+    t.equal(email.body,         body);
     mailServer.unbind(to,handler);
     mailServer.removeAll();
     t.end();
