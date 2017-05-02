@@ -116,19 +116,24 @@ Handlers that receive mail are passed three parameters.
 Sample email object is as follows, taken from the test.js included with the package.
 
 ````JavaScript
-{ sender: { address: '<mailtest@bar.com>', valid: true },
-  receivers: { 'foo@bar.com': true },
-  data: 'X-Mailer: Nodemailer (0.2.3; +http://www.nodemailer.org)\r\nDate: Thu, 01 Dec 2011 10:24:01 GMT\r\nFrom: mailtest@bar.com\r\nTo: foo@bar.com\r\nSubject: email test\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nThis is a test mail\r\n',
-  headers: 
-   { 'X-Mailer': 'Nodemailer (0.2.3; +http://www.nodemailer.org)',
-     Date: 'Thu, 01 Dec 2011 10:24:01 GMT',
-     From: 'mailtest@bar.com',
-     To: 'foo@bar.com',
-     Subject: 'email test',
-     'MIME-Version': '1.0',
-     'Content-Type': 'text/plain; charset=UTF-8',
-     'Content-Transfer-Encoding': 'quoted-printable' },
-  body: 'This is a test mail\r\n' }
+{
+  sender:    'mailtest@bar.com,
+  receivers: {
+    'foo@bar.com': true
+  },
+  data:      'X-Mailer: Nodemailer (0.2.3; +http://www.nodemailer.org)\r\nDate: Thu, 01 Dec 2011 10:24:01 GMT\r\nFrom: mailtest@bar.com\r\nTo: foo@bar.com\r\nSubject: email test\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nThis is a test mail',
+  body:      'This is a test mail',
+  headers: {
+    'x-mailer':                  'Nodemailer (0.2.3; +http://www.nodemailer.org)',
+    date:                        'Thu, 01 Dec 2011 10:24:01 GMT',
+    from:                        'mailtest@bar.com',
+    to:                          'foo@bar.com',
+    subject:                     'email test',
+    'mime-version':              '1.0',
+    'content-type':              { value: 'text/plain' },
+    'content-transfer-encoding': 'quoted-printable'
+  }
+}
 ````
 
 Modules
