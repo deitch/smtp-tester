@@ -1,304 +1,275 @@
-/*jslint unused:vars, node:true */
-var mailer   = require('nodemailer');
-var ms       = require('../lib/index');
-var test     = require('tape');
-var os       = require('os');
-var async    = require('async');
+const Nodemailer = require('nodemailer');
+const SMTPTester = require('../lib/index');
+const test       = require('tape-promise').default(require('tape'));
 
 
-var PORT = 4025;
-var mailServer;
-var smtpTransport;
-var sender = 'smtpmailtest@gmail.com';
+let smtpTester;
+let smtpTransport;
 
 
-function sendmail(to, subject, body, headers, cb) {
-  if (!cb && typeof(headers) === 'function') {
-    cb = headers;
-    headers = {};
-  }
-  smtpTransport.sendMail({
+const sender = 'smtpmailtest@gmail.com';
+
+
+function sendmail(to, subject, body, headers) {
+  return smtpTransport.sendMail({
     from:    sender,
-    to:      to,
-    subject: subject,
+    to,
+    subject,
     text:    body,
-    headers: headers
-  }, cb);
+    headers
+  });
 }
 
 test('setup', function(t) {
-  smtpTransport = mailer.createTransport({
-    host: 'localhost',
-    port: PORT,
-    secure: false,
-    name: os.hostname(),
-    tls: {
-      rejectUnauthorized: false
-    }
-  });
-  mailServer = ms.init(PORT);
+  const port = 4025;
+  smtpTransport = Nodemailer.createTransport({ port });
+  smtpTester    = SMTPTester.init(port);
   t.end();
 });
 
 
 test('specific handler', function(t) {
-  var recp = 'foo@gmail.com', subject = 'email test', body = 'This is a test email',
-  handler = function(address, id, email) {
-    t.equal(address,            recp);
-    t.equal(email.headers.to,   recp);
+  const recipient = 'foo@gmail.com';
+  const subject   = 'email test';
+  const body      = 'This is a test email';
+
+  function handler(address, id, email) {
+    t.equal(address,            recipient);
+    t.equal(email.headers.to,   recipient);
     t.equal(email.headers.from, sender);
     t.equal(email.body,         body);
-    mailServer.unbind(recp,handler);
-    mailServer.removeAll();
-    t.end();
-  };
 
-  mailServer.bind(recp, handler);
-  sendmail(recp, subject, body, function(err, response) {
-    t.error(err);
-  });
+    smtpTester.unbind(recipient, handler);
+    smtpTester.removeAll();
+
+    t.end();
+  }
+
+  smtpTester.bind(recipient, handler);
+  sendmail(recipient, subject, body).catch(t.error);
 });
+
 
 test('handler with two emails', function(t) {
-  var recp = 'foo@gmail.com', subject = 'email test', body = 'This is a test email', mails = [],
-  handler = function(address, id, email) {
-		// save this email
-		mails.push({address:address, id: id, email: email});
-  };
+  const recipient = 'foo@gmail.com';
+  const subject   = 'email test';
+  const body      = 'This is a test email';
+  const emails    = [];
 
-  mailServer.bind(recp, handler);
+  function handler(address, id, email) {
+    // Save the email
+    emails.push({ address: address, id: id, email: email });
+  }
 
-	// send the email twice, each time with a different subject, body
-	async.waterfall([
-		function (cb) {
-			sendmail(recp, subject+"0", body+"0", cb);
-		},
-		function (res,cb) {
-			sendmail(recp, subject+"1", body+"1", cb);
-		}
-	],function (err) {
-		if (err) {
-			t.error(err);
-		} else {
-			// process the emails
-			t.equal(mails.length, 2);
-			for (var i=0; i<mails.length; i++) {
-		    t.equal(mails[i].address,               recp);
-		    t.equal(mails[i].email.headers.to,      recp);
-		    t.equal(mails[i].email.headers.from,    sender);
-		    t.equal(mails[i].email.headers.subject, subject+i);
-		    t.equal(mails[i].email.body,            body+i);
-			}
-	    mailServer.unbind(recp,handler);
-	    mailServer.removeAll();
-			t.end();
-		}
-	});
+  smtpTester.bind(recipient, handler);
+
+  // Send the email twice, each time with a different subject and body
+  return Promise.resolve()
+    .then(() => sendmail(recipient, `${subject}0`, `${body}0`))
+    .then(() => sendmail(recipient, `${subject}1`, `${body}1`))
+    .then(function() {
+      // process the emails
+      t.equal(emails.length, 2);
+
+      t.equal(emails[0].address,               recipient);
+      t.equal(emails[0].email.headers.to,      recipient);
+      t.equal(emails[0].email.headers.from,    sender);
+      t.equal(emails[0].email.headers.subject, `${subject}0`);
+      t.equal(emails[0].email.body,            `${body}0`);
+
+      t.equal(emails[1].address,               recipient);
+      t.equal(emails[1].email.headers.to,      recipient);
+      t.equal(emails[1].email.headers.from,    sender);
+      t.equal(emails[1].email.headers.subject, `${subject}1`);
+      t.equal(emails[1].email.body,            `${body}1`);
+
+      smtpTester.unbind(recipient, handler);
+    });
 });
 
+
 test('two emails with different handlers', function(t) {
-  var recp = 'foo@gmail.com', subject = 'email test', body = 'This is a test email';
-  var handler0Factory = function (cb) {
-  	handler0 = function(address, id, email) {
-	    t.equal(address,               recp);
-	    t.equal(email.headers.to,      recp);
-	    t.equal(email.headers.from,    sender);
-	    t.equal(email.headers.subject, subject+"0");
-	    t.equal(email.body,            body+"0");
-			mailServer.unbind(recp,handler0);
-			mailServer.removeAll();
-			cb(null);
-	  };
+  const recipient = 'foo@gmail.com';
+  const subject   = 'email test';
+  const body      = 'This is a test email';
 
-    return handler0;
-  };
-  var handler1Factory = function (cb) {
-		handler1 = function(address, id, email) {
-	    t.equal(address,               recp);
-	    t.equal(email.headers.to,      recp);
-	    t.equal(email.headers.from,    sender);
-	    t.equal(email.headers.subject, subject+"1");
-	    t.equal(email.body,            body+"1");
-			mailServer.unbind(recp,handler1);
-			mailServer.removeAll();
-			cb(null);
-	  };
+  function handler0(address, id, email) {
+    t.equal(address,               recipient);
+    t.equal(email.headers.to,      recipient);
+    t.equal(email.headers.from,    sender);
+    t.equal(email.headers.subject, `${subject}0`);
+    t.equal(email.body,            `${body}0`);
+    smtpTester.unbind(recipient, handler0);
+    smtpTester.removeAll();
+  }
 
-    return handler1;
-  };
+  function handler1(address, id, email) {
+    t.equal(address,               recipient);
+    t.equal(email.headers.to,      recipient);
+    t.equal(email.headers.from,    sender);
+    t.equal(email.headers.subject, `${subject}1`);
+    t.equal(email.body,            `${body}1`);
+    smtpTester.unbind(recipient, handler1);
+    smtpTester.removeAll();
+  }
 
-	// send the email twice, each time with a different subject, body
-	async.waterfall([
-		function (cb) {
-			sendmail(recp, subject+"0", body+"0", cb);
-		},
-		function (res,cb) {
-			mailServer.bind(recp,handler0Factory(cb));
-		},
-		function (cb) {
-			sendmail(recp, subject+"1", body+"1", cb);
-		},
-		function (res,cb) {
-			mailServer.bind(recp,handler1Factory(cb));
-		}
-	],function (err) {
-		if (err) {
-			t.error(err);
-		} else {
-			t.end();
-		}
-	});
+  // Send the email twice, each time with a different subject and body,
+  // also different handlers each time.
+  return Promise.resolve()
+    .then(() => sendmail(recipient, `${subject}0`, `${body}0`))
+    .then(() => smtpTester.bind(recipient, handler0))
+    .then(() => sendmail(recipient, `${subject}1`, `${body}1`))
+    .then(() => smtpTester.bind(recipient, handler1));
 });
 
 
 
 test('catch-all handler', function(t) {
-  var recp = 'bar@gmail.com', subject = 'some other test', body = 'This is another test email',
-  handler = function(address, id, email) {
+  const recipient = 'bar@gmail.com';
+  const subject   = 'some other test';
+  const body      = 'This is another test email';
+
+  function handler(address, id, email) {
     t.equal(address,            null);
-    t.equal(email.headers.to,   recp);
+    t.equal(email.headers.to,   recipient);
     t.equal(email.headers.from, sender);
     t.equal(email.body,         body);
-    mailServer.unbind(handler);
-    mailServer.removeAll();
+    smtpTester.unbind(handler);
+    smtpTester.removeAll();
     t.end();
-  };
+  }
 
-  mailServer.bind(handler);
+  smtpTester.bind(handler);
 
-  sendmail(recp, subject, body, function(err, response) {
-    t.error(err);
-  });
+  sendmail(recipient, subject, body).catch(t.error);
 });
 
 
 test('folded headers', function(t) {
-  var longHeaderValue = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam sagittis purus vitae aliquet euismod.';
-  var recp = 'bar@gmail.com', subject = 'email test why not', body = 'Why not a test email?';
-  handler = function(address, id, email) {
-    t.equal(email.headers.to,          recp);
+  const longHeaderValue = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam sagittis purus vitae aliquet euismod.';
+  const recipient       = 'bar@gmail.com';
+  const subject         = 'email test why not';
+  const body            = 'Why not a test email?';
+
+  function handler(address, id, email) {
+    t.equal(email.headers.to,          recipient);
     t.equal(email.headers.from,        sender);
     t.equal(email.headers['x-folded'], longHeaderValue);
-    mailServer.unbind(handler);
-    mailServer.removeAll();
+    smtpTester.unbind(handler);
+    smtpTester.removeAll();
     t.end();
-  };
+  }
 
-  mailServer.bind(handler);
+  smtpTester.bind(handler);
 
-  var headers = {
+  const headers = {
     'x-folded': longHeaderValue
   };
 
-  sendmail(recp, subject, body, headers, function(err, response) {
-    t.error(err);
-  });
+  sendmail(recipient, subject, body, headers).catch(t.error);
 });
 
 
 test('remove by ID', function(t) {
-  var recp = 'foo@gmail.com', subject = 'email strange test', body = 'Charmed test email',
-  handler1 = function(address, id, email) {
-    mailServer.remove(id);
-    mailServer.unbind(handler1);
+  const recipient = 'foo@gmail.com';
+  const subject   = 'email strange test';
+  const body      = 'Charmed test email';
 
-    var timeout = setTimeout(function() {
-      mailServer.unbind(handler2);
+  let timeout;
+
+  function handler1(address, id) {
+    smtpTester.remove(id);
+    smtpTester.unbind(handler1);
+
+    timeout = setTimeout(function() {
+      smtpTester.unbind(handler2);
       t.end();
     }, 500);
 
-    var handler2 = function(address, id, email) {
-      clearTimeout(timeout);
-      t.fail('Did not expect to get any other message.');
-      mailServer.unbind(handler2);
-      t.end();
-    };
+    smtpTester.bind(handler2);
+  }
 
-    mailServer.bind(handler2);
-  };
+  function handler2() {
+    clearTimeout(timeout);
+    t.fail('Did not expect to get any other message.');
+    smtpTester.unbind(handler2);
+    t.end();
+  }
 
-  mailServer.bind(handler1);
+  smtpTester.bind(handler1);
 
-  sendmail(recp, subject, body, function(err, response) {
-    t.error(err);
-  });
+  sendmail(recipient, subject, body).catch(t.error);
 });
 
 
 test('unescape double dots', function(t) {
-  var to = 'foo@gmail.com',
-      subject = 'email test',
-      body = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam sagittis... Purus vitae aliquet euismod.',
-  handler = function(address, id, email) {
-    t.equal(email.body,         body);
-    mailServer.unbind(to,handler);
-    mailServer.removeAll();
+  const recipient = 'foo@gmail.com';
+  const subject   = 'email test';
+  const body      = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam sagittis... Purus vitae aliquet euismod.';
+
+  function handler(address, id, email) {
+    t.equal(email.body, body);
+    smtpTester.unbind(recipient, handler);
+    smtpTester.removeAll();
     t.end();
-  };
+  }
 
-  mailServer.bind(to, handler);
+  smtpTester.bind(recipient, handler);
 
-  smtpTransport.sendMail({
-    from:    sender,
-    to:      to,
-    subject: subject,
-    text:    body
-  }, function(err, response) {
-    t.error(err);
-  });
+  sendmail(recipient, subject, body).catch(t.error);
 });
 
 
 test('unbind', function(t) {
-  var recp = 'foo@gmail.com',
-    subject = 'email strange test',
-    body = 'Charmed test email';
+  const recipient = 'foo@gmail.com';
+  const subject   = 'email strange test';
+  const body      = 'Charmed test email';
 
-  var handler1Called = false,
-    handler2Called = false;
+  let handler1Called = false;
 
-  var handler1 = function() {
+  function handler1() {
     handler1Called = true;
-  };
+  }
 
-  var handler2 = function() {
-    t.fail('`handler2` was unbound and should not be called.');
-  };
+  function handler2() {
+    t.fail('handler2 was unbound and should not be called.');
+  }
 
-  mailServer.bind(handler1);
-  mailServer.bind(handler2);
+  smtpTester.bind(handler1);
+  smtpTester.bind(handler2);
 
-  mailServer.unbind(handler2);
+  smtpTester.unbind(handler2);
 
-  sendmail(recp, subject, body, function(err, response) {
-    t.ok(handler1Called);
-    t.error(err);
-
-    mailServer.unbind(handler1);
-    t.end();
-  });
+  sendmail(recipient, subject, body)
+    .then(function() {
+      t.ok(handler1Called);
+      t.end();
+    })
+    .catch(t.error);
 });
 
 
 test('modules', function(t) {
-  var recp = 'foo@gmail.com', subject = 'email test modules', body = 'This is a module test email',
-  success = mailServer.module('logAll');
-  t.equal(success, true);
+  /* eslint-disable no-console */
+  const recipient = 'foo@gmail.com';
+  const subject   = 'email test modules';
+  const body      = 'This is a module test email';
 
-  var _log    = console.log;
-  console.log = function(msg) {
+  const moduleLoaded = smtpTester.module('logAll');
+  t.equal(moduleLoaded, true);
+
+  const _log    = console.log;
+  console.log   = function(msg) {
     console.log = _log;
 
-    var lines = msg
+    const lines = msg
       .split('\n')
-      .filter(function(line) {
-        return line.indexOf('Date:') === -1;
-      });
+      .filter(line => line.indexOf('Date:') === -1);
 
     t.same(lines, [
-      'From: '+sender,
-      'To: '+recp,
-      'Subject: '+subject,
+      `From: ${sender}`,
+      `To: ${recipient}`,
+      `Subject: ${subject}`,
       body,
       '',
       ''
@@ -307,14 +278,13 @@ test('modules', function(t) {
     t.end();
   };
 
-  sendmail(recp, subject, body, function(err, response) {
-    t.error(err);
-  });
+  sendmail(recipient, subject, body).catch(t.error);
+  /* eslint-enable no-console */
 });
 
 
 test('teardown', function(t) {
-  mailServer.stop();
+  smtpTester.stop();
   smtpTransport.close();
   t.end();
 });
