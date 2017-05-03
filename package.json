@@ -1,7 +1,7 @@
 {
   "name": "smtp-tester",
   "description": "Quick and dirty smtp server, that accepts handlers to process messages",
-  "version": "0.6.3",
+  "version": "1.0.0",
   "url": "http://github.com/deitch/smtp-tester",
   "scripts": {
     "test": "node test/test.js"
@@ -17,18 +17,16 @@
   },
   "main": "./lib/index.js",
   "dependencies": {
-    "mailparser": "^0.5.3",
-    "mimelib-noiconv": "^0.1.9",
-    "nodemailer": "^0.7.1",
-    "simplesmtp": "^0.3.35",
-    "underscore": "^1.8.3"
+    "mailparser": "^2.0.4",
+    "smtp-server": "^3.0.1"
   },
   "repository": {
     "type": "git",
     "url": "http://github.com/deitch/smtp-tester.git"
   },
   "devDependencies": {
-    "async": "^2.0.0-rc.5",
-    "tape": "^4.5.1"
+    "nodemailer": "^4.0.1",
+    "tape": "^4.5.1",
+    "tape-promise": "^2.0.1"
   }
 }
