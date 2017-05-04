@@ -54,6 +54,41 @@ Done. Every mail sent to foo@bar.com (and every one sent before binding) will ca
 
 You can have as many handlers as you want, they are all executed, even for the same address. However, execution order, while usually in the order in which they were added, is not guaranteed.
 
+If you intend to capture a single message using promises, you can do:
+
+```js
+mailServer.captureOne('foo@bar.com')
+  .then(function({ address, id, email }) {
+    // Do something interesting
+  });
+```
+
+Most likely you'll want to use the `wait` option as well, so if no message is received
+in the given time frame, `captureOne()` rejects the promise:
+
+```js
+mailServer.captureOne('foo@bar.com', { wait: 1000 })
+  .then(function({ address, id, email }) {
+    // Do something interesting
+  })
+  .catch(function(error) {
+    // No message delivered to foo@bar.com in 1 second.
+  });
+```
+
+Now using async/await:
+
+```js
+try {
+  const { email } = await mailServer.captureOne('foo@bar.com', { wait: 1000 });
+} catch (error) {
+  // No message delivered to foo@bar.com in 1 second.
+}
+```
+
+This is useful for testing that _no_ message was delivered, too.
+
+
 # Catch-All Handlers
 If you want a handler to catch every email that is sent through the system, just bind with no address at all.
 
