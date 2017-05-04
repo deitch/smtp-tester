@@ -111,13 +111,13 @@ Handlers that receive mail are passed three parameters.
 
 * addr: Address to which the email was addressed, and for which the handler was bound. If this is a catch-all handler, then this is null.
 * id: Internal ID of the email in this mail server process. Useful for removing messages or checking against something in our cache.
-* email: JavaScript object of the email, containing "sender", "receivers", "data" (raw text), "headers" and "body".
+* email: JavaScript object of the email, containing "sender", "receivers", "data" (raw text), "headers", "body" (plain text) and "html".
 
 Sample email object is as follows, taken from the test.js included with the package.
 
 ````JavaScript
 {
-  sender:    'mailtest@bar.com,
+  sender:    'mailtest@bar.com',
   receivers: {
     'foo@bar.com': true
   },
