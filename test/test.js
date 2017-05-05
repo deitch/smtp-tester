@@ -313,6 +313,33 @@ test('captureOne with wait', function(t) {
 });
 
 
+test('html', function(t) {
+  smtpTester.removeAll();
+
+  const recipient = 'foo@gmail.com';
+  const subject   = 'email test';
+  const html      = '<h1>This is a test email</h1>';
+
+  function handler(address, id, email) {
+    t.equal(address,    recipient);
+    t.equal(email.html, html);
+
+    smtpTester.unbind(recipient, handler);
+
+    t.end();
+  }
+
+  smtpTester.bind(recipient, handler);
+
+  smtpTransport.sendMail({
+    from:    sender,
+    to:      recipient,
+    subject,
+    html
+  }).catch(t.error);
+});
+
+
 test('teardown', function(t) {
   smtpTester.stop();
   smtpTransport.close();
