@@ -20,6 +20,7 @@ function sendmail(to, subject, body, headers) {
   });
 }
 
+
 test('setup', function(t) {
   const port = 4025;
   smtpTransport = Nodemailer.createTransport({ port });
@@ -280,6 +281,35 @@ test('modules', function(t) {
 
   sendmail(recipient, subject, body).catch(t.error);
   /* eslint-enable no-console */
+});
+
+
+test('captureOne', function(t) {
+  const recipient = 'foo@gmail.com';
+  const subject   = 'email test';
+  const body      = 'This is a test email';
+
+  smtpTester.removeAll();
+
+  return sendmail(recipient, subject, body)
+    .then(() => smtpTester.captureOne(recipient))
+    .then(function({ id, email }) {
+      t.ok(id);
+      t.equal(email.body, body);
+    });
+});
+
+
+test('captureOne with wait', function(t) {
+  smtpTester.removeAll();
+
+  return smtpTester.captureOne('foo@gmail.com', { wait: 100 })
+    .then(function() {
+      t.fail('Expected promise to be rejected');
+    })
+    .catch(function(error) {
+      t.equal(error.message, 'No message delivered to foo@gmail.com');
+    });
 });
 
 
