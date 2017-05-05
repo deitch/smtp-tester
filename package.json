@@ -1,7 +1,7 @@
 {
   "name": "smtp-tester",
   "description": "Quick and dirty smtp server, that accepts handlers to process messages",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "url": "http://github.com/deitch/smtp-tester",
   "scripts": {
     "test": "node test/test.js"
