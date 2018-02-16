@@ -21,7 +21,7 @@ First, require smtp-tester:
 var ms = require('smtp-tester');
 ````
 
-Next, initialize a server with a port it should listen on (yes, I know, never end a sentence in a preposition).
+Next, initialize a server with a port on which it should listen.
 
 ````JavaScript
 var mailServer = ms.init(port);
