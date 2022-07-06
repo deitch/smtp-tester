@@ -25,7 +25,7 @@
     "url": "http://github.com/deitch/smtp-tester.git"
   },
   "devDependencies": {
-    "nodemailer": "^4.0.1",
+    "nodemailer": "^6.7.7",
     "tape": "^4.5.1",
     "tape-promise": "^2.0.1"
   }
