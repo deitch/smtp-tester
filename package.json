@@ -13,12 +13,12 @@
     "fallafeljan (https://github.com/fallafeljan)"
   ],
   "engines": {
-    "node": ">=0.12"
+    "node": ">=18.0.0"
   },
   "main": "./lib/index.js",
   "dependencies": {
-    "mailparser": "^2.0.4",
-    "smtp-server": "^3.0.1"
+    "mailparser": "^3.5.0",
+    "smtp-server": "^3.11.0"
   },
   "repository": {
     "type": "git",
