@@ -16,7 +16,10 @@
     "node": ">=14.0.0"
   },
   "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "dependencies": {
+    "@types/mailparser": "^3.4.0",
+    "@types/smtp-server": "^3.5.7",
     "mailparser": "^3.5.0",
     "smtp-server": "^3.11.0"
   },
