@@ -16,7 +16,7 @@ declare module "smtp-tester" {
    * @param id The internal ID of the email.
    * @param email The email being received.
    */
-  type Handler = (recipient: "string", id: number, email: EmailInfo) => void
+  type Handler = (recipient: string, id: number, email: EmailInfo) => void
 
   /**
    * A catch-all handler that triggers when any email is received.
@@ -35,7 +35,7 @@ declare module "smtp-tester" {
    * @param email The email being received.
    */
   interface CaptureOneResult {
-    address: "string"
+    address: string
     id: number
     email: EmailInfo
   }
@@ -132,12 +132,12 @@ declare module "smtp-tester" {
     /**
      * The sender of the email.
      */
-    sender: "string"
+    sender: string
 
     /**
      * The receivers of the email.
      */
-    receivers: Record<"string", true>
+    receivers: Record<string, true>
 
     /**
      * The raw data of the email.
