@@ -88,7 +88,7 @@ declare module "smtp-tester" {
      */
     captureOne(
       recipient: string,
-      options: { wait: number }
+      options?: { wait: number }
     ): Promise<CaptureOneResult>
 
     /**
@@ -108,7 +108,7 @@ declare module "smtp-tester" {
      *
      * @param callback The callback that is fired when the server is closed.
      */
-    stop(callback: () => void): void
+    stop(callback?: () => void): void
 
     /**
      * Loads a pre-shipped module.
